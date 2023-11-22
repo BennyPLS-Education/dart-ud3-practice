@@ -1,33 +1,22 @@
 import 'models.dart';
 
+/// Search response
+///
+/// This is the mapped response from the search page of The Open Library.
 class SearchResponse {
-  int numFound;
-  int start;
-  bool numFoundExact;
   List<Work> works;
-  int searchResponseNumFound;
-  String q;
-  dynamic offset;
 
+  /// This constructor is used to create a search response.
   SearchResponse({
-    required this.numFound,
-    required this.start,
-    required this.numFoundExact,
     required this.works,
-    required this.searchResponseNumFound,
-    required this.q,
-    required this.offset,
   });
 
-  factory SearchResponse.fromJson(String str) => SearchResponse.fromMap(json.decode(str));
+  /// Converts the JSON response to a [SearchResponse] instance.
+  factory SearchResponse.fromJson(String str) =>
+      SearchResponse.fromMap(json.decode(str));
 
+  /// Converts the JSON response to a [SearchResponse] instance.
   factory SearchResponse.fromMap(Map<String, dynamic> json) => SearchResponse(
-    numFound: json["numFound"],
-    start: json["start"],
-    numFoundExact: json["numFoundExact"],
-    works: List<Work>.from(json["docs"].map((x) => Work.fromMap(x))),
-    searchResponseNumFound: json["num_found"],
-    q: json["q"],
-    offset: json["offset"],
-  );
+        works: List<Work>.from(json["docs"].map((x) => Work.fromMap(x))),
+      );
 }

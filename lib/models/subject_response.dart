@@ -1,27 +1,21 @@
 import 'models.dart';
 
+/// Subject response
+///
+/// This is the mapped response from the diferents subjects pages of The Open Library.
 class SubjectResponse {
-  String key;
-  String name;
-  String subjectType;
-  int workCount;
   List<Work> works;
 
+  /// This constructor is used to create a subject response.
   SubjectResponse({
-    required this.key,
-    required this.name,
-    required this.subjectType,
-    required this.workCount,
     required this.works,
   });
 
+  /// Converts the JSON response to a [SubjectResponse] instance.
   factory SubjectResponse.fromJson(String str) => SubjectResponse.fromMap(json.decode(str));
 
+  /// Converts the JSON response to a [SubjectResponse] instance.
   factory SubjectResponse.fromMap(Map<String, dynamic> json) => SubjectResponse(
-    key: json["key"],
-    name: json["name"],
-    subjectType: json["subject_type"],
-    workCount: json["work_count"],
     works: List<Work>.from(json["works"].map((x) => Work.fromMap(x))),
   );
 

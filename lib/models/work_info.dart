@@ -1,192 +1,85 @@
 import 'models.dart';
 
+/// Work Info Model
+///
+/// A Work within the Open Library system is a logical collection of Editions.
+/// This is also a mapped response from a work page of The Open Library.
 class WorkInfo {
-  dynamic description;
-  String title;
-  List<int>? covers;
-  List<String?>? subjectPlaces;
-  List<String?>? subjects;
-  List<String?>? subjectPeople;
   String key;
-  List<WorkInfoAuthor> authors;
-  List<String?>? subjectTimes;
-  WorkInfoType type;
-  int latestRevision;
-  int revision;
-  WorkInfoCreated created;
-  WorkInfoCreated lastModified;
-  List<WorkInfoLink>? links;
-  List<WorkInfoExcerpt>? excerpts;
+  String title;
+  String? description;
+  List<int> covers;
+  List<String> authors;
+  String? createdDate;
 
+  /// This constructor is used to create a work info.
   WorkInfo({
-    this.description,
-    required this.title,
-    this.covers,
-    this.subjectPlaces,
-    this.subjects,
-    this.subjectPeople,
     required this.key,
+    required this.title,
+    this.description,
+    required this.covers,
     required this.authors,
-    this.subjectTimes,
-    required this.type,
-    required this.latestRevision,
-    required this.revision,
-    required this.created,
-    required this.lastModified,
-    this.links,
-    this.excerpts,
+    this.createdDate,
   });
 
+  /// This method is used to create a work info from a JSON string.
   factory WorkInfo.fromJson(String str) => WorkInfo.fromMap(json.decode(str));
 
+  /// This method is used to create a work info from a map.
   factory WorkInfo.fromMap(Map<String, dynamic> json) => WorkInfo(
-        description: json["description"].runtimeType == Null
-            ? null
-            : json["description"].runtimeType != Map
-                ? json["description"]
-                : WorkInfoCreated.fromMap(json["description"]),
+        description: _descriptionFromMap(json),
         title: json["title"],
         covers: json["covers"] == null
             ? []
             : List<int>.from(json["covers"]!.map((x) => x)),
-        subjectPlaces: json["subject_places"] == null
-            ? []
-            : List<String>.from(json["subject_places"]!.map((x) => x)),
-        subjects: json["subjects"].runtimeType == Null
-            ? null
-            : List<String>.from(json["subjects"].map((x) => x)),
-        subjectPeople: json["subject_people"] == null
-            ? []
-            : List<String>.from(json["subject_people"]!.map((x) => x)),
         key: json["key"],
-        authors: List<WorkInfoAuthor>.from(
-            json["authors"].map((x) => WorkInfoAuthor.fromMap(x))),
-        subjectTimes: json["subject_times"] == null
-            ? []
-            : List<String>.from(json["subject_times"]!.map((x) => x)),
-        type: WorkInfoType.fromMap(json["type"]),
-        latestRevision: json["latest_revision"],
-        revision: json["revision"],
-        created: WorkInfoCreated.fromMap(json["created"]),
-        lastModified: WorkInfoCreated.fromMap(json["last_modified"]),
-        links: json["links"] == null
-            ? []
-            : List<WorkInfoLink>.from(
-                json["links"]!.map((x) => WorkInfoLink.fromMap(x))),
-        excerpts: json["excerpts"] == null
-            ? []
-            : List<WorkInfoExcerpt>.from(
-                json["excerpts"]!.map((x) => WorkInfoExcerpt.fromMap(x))),
+        authors: _authorKeysFromMap(json),
+        createdDate: json["created"]["value"],
       );
 
-  getCover({Sizes size = Sizes.L}) {
-    if (covers != null && covers!.isNotEmpty) {
-      return 'https://covers.openlibrary.org/b/id/${covers!.first}-$size.jpg';
+  /// This method is used to get the author keys from the map.
+  ///
+  /// NOTE: This method was created to minimize the code redundancy.
+  static List<String> _authorKeysFromMap(Map<String, dynamic> json) {
+    List<String> authorKeys = [];
+
+    if (json["authors"] != null) {
+      json["authors"].forEach((author) {
+        authorKeys.add(author["author"]["key"]);
+      });
+    }
+
+    return authorKeys;
+  }
+
+  /// This method is used to get the description from the map.
+  ///
+  /// NOTE: This method was created to reconcile multiple JSON formats.
+  static String? _descriptionFromMap(Map<String, dynamic> json) {
+    if (json["description"] == null) {
+      return null;
+    }
+
+    if (json["description"].runtimeType == String) {
+      return json["description"];
+    }
+
+    return json["description"]["value"];
+  }
+
+  /// This method is used to get the cover.
+  ///
+  /// This returns a URL to the cover image otherwise a placeholder.
+  String getCover() {
+    if (covers.isNotEmpty) {
+      return 'https://covers.openlibrary.org/b/id/${covers.first}-L.jpg';
     }
     return 'https://i.stack.imgur.com/GNhxO.png';
   }
-}
 
-class WorkInfoAuthor {
-  dynamic type;
-  WorkInfoType author;
-
-  WorkInfoAuthor({
-    required this.type,
-    required this.author,
-  });
-
-  factory WorkInfoAuthor.fromJson(String str) =>
-      WorkInfoAuthor.fromMap(json.decode(str));
-
-  factory WorkInfoAuthor.fromMap(Map<String, dynamic> json) => WorkInfoAuthor(
-        type: json["type"].runtimeType == String
-            ? json["type"]
-            : WorkInfoType.fromMap(json["type"]),
-        author: WorkInfoType.fromMap(json["author"]),
-      );
-
-  get authorKey {
-    return author.key;
-  }
-}
-
-class WorkInfoType {
-  String key;
-
-  WorkInfoType({
-    required this.key,
-  });
-
-  factory WorkInfoType.fromJson(String str) =>
-      WorkInfoType.fromMap(json.decode(str));
-
-  factory WorkInfoType.fromMap(Map<String, dynamic> json) => WorkInfoType(
-        key: json["key"],
-      );
-}
-
-class WorkInfoCreated {
-  String type;
-  String value;
-
-  WorkInfoCreated({
-    required this.type,
-    required this.value,
-  });
-
-  factory WorkInfoCreated.fromJson(String str) =>
-      WorkInfoCreated.fromMap(json.decode(str));
-
-  factory WorkInfoCreated.fromMap(Map<String, dynamic> json) => WorkInfoCreated(
-        type: json["type"],
-        value: json["value"],
-      );
-
+  /// This method is used to get the formatted date.
+  /// Formats date in the format of dd/mm/yyyy.
   get formattedDate {
-    return value.split('T').first.split('-').reversed.join('/');
+    return createdDate?.split('T').first.split('-').reversed.join('/');
   }
-}
-
-class WorkInfoExcerpt {
-  String? comment;
-  String excerpt;
-  WorkInfoType? author;
-
-  WorkInfoExcerpt({
-    this.comment,
-    required this.excerpt,
-    this.author,
-  });
-
-  factory WorkInfoExcerpt.fromJson(String str) =>
-      WorkInfoExcerpt.fromMap(json.decode(str));
-
-  factory WorkInfoExcerpt.fromMap(Map<String, dynamic> json) => WorkInfoExcerpt(
-      comment: json["comment"],
-      excerpt: json["excerpt"],
-      author: json["author"].runtimeType == Null
-          ? null
-          : WorkInfoType.fromMap(json["author"]));
-}
-
-class WorkInfoLink {
-  String url;
-  String title;
-  WorkInfoType type;
-
-  WorkInfoLink({
-    required this.url,
-    required this.title,
-    required this.type,
-  });
-
-  factory WorkInfoLink.fromJson(String str) =>
-      WorkInfoLink.fromMap(json.decode(str));
-
-  factory WorkInfoLink.fromMap(Map<String, dynamic> json) => WorkInfoLink(
-        url: json["url"],
-        title: json["title"],
-        type: WorkInfoType.fromMap(json["type"]),
-      );
 }

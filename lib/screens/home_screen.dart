@@ -2,12 +2,50 @@ import 'package:open_books_app/widgets/book_subject_slider.dart';
 
 import 'screens.dart';
 
+/// Home Page
+///
+/// The home page of the application.
 class HomeScreen extends StatelessWidget {
+  /// The list of subject (API-ENDPOINTS) to show in the application.
+  static const subjects = [
+    'love',
+    'romance',
+    'horror',
+    'fantasy',
+    'fiction',
+    'mystery',
+    'action',
+    'history',
+    'self-help',
+    'poetry',
+    'art_history',
+    'nutrition',
+    'physics',
+    'biology',
+    'chemistry',
+    'mathematics',
+    'programming',
+    'computers',
+    'business',
+    'economics',
+    'philosophy',
+    'psychology',
+    'sociology',
+    'engineering',
+    'medicine',
+    'law',
+    'education',
+    'music',
+    'sports'
+  ];
+
   const HomeScreen() : super(key: null);
 
   @override
   Widget build(BuildContext context) {
-    final bookProvider = Provider.of<BookProvider>(context, listen: true);
+    List<Widget> rows = [const TrendingCardSwiper()];
+
+    rows.addAll(subjects.map((subject) => BookSubjectSlider(subject: subject)));
 
     return Scaffold(
       appBar: AppBar(
@@ -23,41 +61,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            CardSwiper(works: bookProvider.trending),
-            const BookSubjectSlider(subject: 'love'),
-            const BookSubjectSlider(subject: 'romance'),
-            const BookSubjectSlider(subject: 'horror'),
-            const BookSubjectSlider(subject: 'fantasy'),
-            const BookSubjectSlider(subject: 'fiction'),
-            const BookSubjectSlider(subject: 'mystery'),
-            const BookSubjectSlider(subject: 'action'),
-            const BookSubjectSlider(subject: 'history'),
-            const BookSubjectSlider(subject: 'self-help'),
-            const BookSubjectSlider(subject: 'poetry'),
-            const BookSubjectSlider(subject: 'art_history'),
-            const BookSubjectSlider(subject: 'nutrition'),
-            const BookSubjectSlider(subject: 'physics'),
-            const BookSubjectSlider(subject: 'biology'),
-            const BookSubjectSlider(subject: 'chemistry'),
-            const BookSubjectSlider(subject: 'mathematics'),
-            const BookSubjectSlider(subject: 'programming'),
-            const BookSubjectSlider(subject: 'computers'),
-            const BookSubjectSlider(subject: 'business'),
-            const BookSubjectSlider(subject: 'economics'),
-            const BookSubjectSlider(subject: 'philosophy'),
-            const BookSubjectSlider(subject: 'psychology'),
-            const BookSubjectSlider(subject: 'sociology'),
-            const BookSubjectSlider(subject: 'engineering'),
-            const BookSubjectSlider(subject: 'medicine'),
-            const BookSubjectSlider(subject: 'law'),
-            const BookSubjectSlider(subject: 'education'),
-            const BookSubjectSlider(subject: 'music'),
-            const BookSubjectSlider(subject: 'sports'),
-            const BookSubjectSlider(subject: 'sports'),
-          ],
-        ),
+        child: Column(children: rows),
       ),
     );
   }

@@ -2,12 +2,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'screens.dart';
 
-extension DateTimeExtension on DateTime {
-  String get formattedDate {
-    return '$day/$month/$year';
-  }
-}
-
 class DetailsScreen extends StatelessWidget {
   const DetailsScreen() : super(key: null);
 
@@ -44,14 +38,9 @@ class DetailsScreen extends StatelessWidget {
               ],
             );
           } else if (snapshot.hasError) {
-            return const Center(
-                child: Icon(
-              Icons.error_outline,
-              color: Colors.redAccent,
-              size: 50,
-            ));
+            return const ErrorIcon(expanded: false);
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const CenterLoadingIndicator(expanded: false);
           }
         },
       ),
@@ -59,6 +48,7 @@ class DetailsScreen extends StatelessWidget {
   }
 }
 
+/// A Silver App Bar to display the book cover.
 class _CustomAppBar extends StatelessWidget {
   final WorkInfo workInfo;
 
@@ -68,22 +58,15 @@ class _CustomAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     // Exactament igual que la AppBaer però amb bon comportament davant scroll
     return SliverAppBar(
-      backgroundColor: Colors.indigo,
       expandedHeight: 200,
       floating: false,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        titlePadding: const EdgeInsets.all(0),
-        title: Container(
-          width: double.infinity,
-          alignment: Alignment.bottomCenter,
-          color: Colors.black12,
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Text(
-            workInfo.title ?? 'Sense títol',
-            style: const TextStyle(fontSize: 16),
-          ),
+        titlePadding: const EdgeInsets.all(10),
+        title: Text(
+          workInfo.title,
+          style: const TextStyle(fontSize: 16),
         ),
         background: FadeInImage(
           placeholder: const AssetImage('assets/loading.gif'),
@@ -95,11 +78,7 @@ class _CustomAppBar extends StatelessWidget {
         IconButton(
           onPressed: () {
             launchUrl(
-              Uri(
-                scheme: 'https',
-                host: 'openlibrary.org',
-                path: workInfo.key
-              ),
+              Uri(scheme: 'https', host: 'openlibrary.org', path: workInfo.key),
               mode: LaunchMode.inAppWebView,
             );
           },
@@ -137,43 +116,40 @@ class _TitileAndInfo extends StatelessWidget {
                 softWrap: true,
               ),
               const SizedBox(height: 10),
-              FutureBuilder(
-                  future: bookProvider.ratings(workInfo.key),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<RatingsResponse?> snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data == null ||
-                          snapshot.data!.summary.average == null) {
-                        return const Center(
-                            child: Text('No hi ha puntuacions'));
-                      }
-
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          snapshot.data!.summary.average!.round(),
-                          (index) => const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return const Center(
-                          child: Icon(
-                        Icons.error_outline,
-                        color: Colors.redAccent,
-                        size: 20,
-                      ));
-                    } else {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                  })
+              _ratings(bookProvider)
             ],
           )
         ],
       ),
     );
+  }
+
+  Widget _ratings(BookProvider bookProvider) {
+    return FutureBuilder(
+        future: bookProvider.ratings(workInfo.key),
+        builder:
+            (BuildContext context, AsyncSnapshot<RatingsResponse?> snapshot) {
+          if (snapshot.hasData) {
+            if (snapshot.data!.summary.average == null) {
+              return const Center(child: Text('No hi ha puntuacions'));
+            }
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                snapshot.data!.summary.average!.round(),
+                (index) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return const ErrorIcon(expanded: false);
+          } else {
+            return const CenterLoadingIndicator(expanded: false);
+          }
+        });
   }
 }
 
@@ -194,7 +170,7 @@ class _Overview extends StatelessWidget {
               const Text('Data de llançament :'),
               const SizedBox(width: 5),
               Text(
-                workInfo.created.formattedDate,
+                workInfo.formattedDate ?? 'Sense data',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
@@ -204,9 +180,7 @@ class _Overview extends StatelessWidget {
               style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
           const Divider(),
           Text(
-            workInfo.description?.runtimeType == String
-                ? workInfo.description
-                : workInfo.description?['value'] ?? 'Sense sinopsi',
+            workInfo.description ?? 'Sense sinopsi',
             textAlign: TextAlign.justify,
             maxLines: 30,
             overflow: TextOverflow.ellipsis,

@@ -1,8 +1,12 @@
 import 'widgets.dart';
 
+/// Work poster
+///
+/// This class is used to create a work poster.
 class WorkPoster extends StatelessWidget {
   final Work work;
 
+  /// This constructor is used to create a work poster.
   const WorkPoster({required this.work}) : super(key: null);
 
   @override
@@ -17,31 +21,7 @@ class WorkPoster extends StatelessWidget {
           GestureDetector(
             onTap: () =>
                 Navigator.pushNamed(context, 'details', arguments: work),
-            child: work.getCover() != 'https://i.stack.imgur.com/GNhxO.png'
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: FadeInImage(
-                      placeholder: const AssetImage('assets/no-image.jpg'),
-                      image: NetworkImage(work.getCover()),
-                      height: 190,
-                      width: 130,
-                    ),
-                  )
-                : Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.grey,
-                      border: Border.all(color: Colors.redAccent, width: 5),
-                    ),
-                    height: 190,
-                    width: 130,
-                    child: Center(
-                      child: Text(
-                        work.title,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
+            child: work.getCoverWidget(),
           ),
           const SizedBox(
             height: 5,

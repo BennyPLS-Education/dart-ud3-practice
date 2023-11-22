@@ -2,9 +2,14 @@ import 'package:open_books_app/widgets/work_poster.dart';
 
 import 'widgets.dart';
 
+/// Book subject slider
+///
+/// This class is used to create a book subject slider.
+/// The information is based on a subject to find books.
 class BookSubjectSlider extends StatelessWidget {
   final String subject;
 
+  /// This constructor is used to create a Book Subject Slider.
   const BookSubjectSlider({required this.subject}) : super(key: null);
 
   @override
@@ -29,36 +34,35 @@ class BookSubjectSlider extends StatelessWidget {
           const SizedBox(
             height: 5,
           ),
-          FutureBuilder(
-              future: bookProvider.subject(subject),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.hasData) {
-                  final works = snapshot.data!;
-
-                  return Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: works.length,
-                      itemBuilder: (_, int index) => WorkPoster(
-                        work: works[index],
-                      ),
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  print(snapshot.error);
-                  print(snapshot.stackTrace);
-                  return const Center(
-                      child: Icon(
-                    Icons.error_outline,
-                    color: Colors.redAccent,
-                    size: 50,
-                  ));
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              })
+          _listBooks(bookProvider)
         ],
       ),
+    );
+  }
+
+  /// The list of books
+  Widget _listBooks(BookProvider bookProvider) {
+    return FutureBuilder(
+      future: bookProvider.subject(subject),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          final works = snapshot.data!;
+
+          return Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: works.length,
+              itemBuilder: (_, int index) => WorkPoster(
+                work: works[index],
+              ),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return const ErrorIcon();
+        } else {
+          return const CenterLoadingIndicator();
+        }
+      },
     );
   }
 }
